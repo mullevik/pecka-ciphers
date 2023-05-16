@@ -1,0 +1,135 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>Šifry</h1>
+
+ 
+        <h2>Caesarova šifra</h2>
+
+        <h3>Zašifuj otevřený text</h3>
+        <input id="caesar-encrypt-in" type="text" placeholder="otevřený text" style="width: 100%">
+        <br>
+        <input id="caesar-encrypt-key" type="number">
+        <br>
+        <input id="caesar-encrypt-do" type="button" value="Zašifruj">
+        <p id="caesar-encrypt-out"></p>
+
+        <h3>Dešifruj šifrový text</h3>
+        <input id="caesar-decrypt-in" type="text" placeholder="šifrový text" style="width: 100%">
+        <br>
+        <input id="caesar-decrypt-key" type="number">
+        <input id="caesar-decrypt-do" type="button" value="Dešifruj">
+        <p id="caesar-decrypt-out"></p>
+
+        <hr>
+
+        <h2>Vernamova šifra</h2>
+
+        <h3>Zašifuj otevřený text</h3>
+        <input id="vernam-encrypt-in" type="text" placeholder="otevřený text" style="width: 100%">
+        <br>
+        <input id="vernam-encrypt-key" type="text" placeholder="klíč">
+        <input id="vernam-encrypt-do" type="button" value="Zašifruj">
+        <p id="vernam-encrypt-out"></p>
+
+        <h3>Dešifruj šifrový text</h3>
+        <input id="vernam-decrypt-in" type="text" placeholder="šifrový text" style="width: 100%">
+        <br>
+        <input id="vernam-decrypt-key" type="text" placeholder="klíč">
+        <input id="vernam-decrypt-do" type="button" value="Dešifruj">
+        <p id="vernam-decrypt-out"></p>
+
+
+    <script>
+
+        // Get ASCII chars from 65 to 90 for all uppercase letters
+        const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
+        const IGNORED_CHARS = {" ": null};
+        
+        const CHAR_TO_INDEX_MAP = ALPHABET.reduce((obj, element, index) => {
+            obj[element] = index;
+            return obj;
+        }, {});
+
+        const INDEX_TO_CHAR_MAP = Object.entries(CHAR_TO_INDEX_MAP).reduce((obj, [key, value]) => {
+            obj[value] = key;
+            return obj;
+        }, {});
+
+        function mod(n, m) {
+            // does proper (n % m) operation that always returns a positive number
+            // note that the builtin js modulo is garbage
+            return ((n % m) + m) % m;
+        }
+
+        function processInput(text) {
+            return text.toUpperCase();
+        }
+
+        function caesarEncrypt(openText, key) {
+            return Array.from(openText).map((char) => {
+                if (!(char in CHAR_TO_INDEX_MAP)) {
+                    if (char in IGNORED_CHARS) {
+                        return char
+                    }
+                    return "?"
+                }
+                const index = CHAR_TO_INDEX_MAP[char];
+                const shiftedIndex = mod(index + key, ALPHABET.length);
+                return INDEX_TO_CHAR_MAP[shiftedIndex];
+            }).join("");
+        }
+
+        function vernamEncrypt(openText, key, encrypt) {
+            let keyPosition = 0;
+
+            return Array.from(openText).map((char) => {
+                const currentKeyPosition = keyPosition;
+                keyPosition += 1;
+
+                if (!(char in CHAR_TO_INDEX_MAP)) {
+                    if (char in IGNORED_CHARS) {
+                        return char
+                    }
+                    return "?"
+                }
+
+                const openTextIndex = CHAR_TO_INDEX_MAP[char];
+                const keyIndex = CHAR_TO_INDEX_MAP[key[mod(keyPosition, key.length)]];
+
+                const resultingIndex = encrypt ? openTextIndex + keyIndex : openTextIndex - keyIndex;
+                return INDEX_TO_CHAR_MAP[mod(resultingIndex, ALPHABET.length)];
+            }).join("");
+        }
+
+        document.getElementById("caesar-encrypt-do").addEventListener("click", () => {
+            const input = processInput(document.getElementById("caesar-encrypt-in").value);
+            const key = parseInt(document.getElementById("caesar-encrypt-key").value);
+            document.getElementById("caesar-encrypt-out").innerText = caesarEncrypt(input, key);
+        });
+
+        document.getElementById("caesar-decrypt-do").addEventListener("click", () => {
+            const input = processInput(document.getElementById("caesar-decrypt-in").value);
+            const key = parseInt(document.getElementById("caesar-decrypt-key").value);
+            document.getElementById("caesar-decrypt-out").innerText = caesarEncrypt(input, -key);
+        });
+
+        document.getElementById("vernam-encrypt-do").addEventListener("click", () => {
+            const input = processInput(document.getElementById("vernam-encrypt-in").value);
+            const key = processInput(document.getElementById("vernam-encrypt-key").value);
+            document.getElementById("vernam-encrypt-out").innerText = vernamEncrypt(input, key, true);
+        });
+
+        document.getElementById("vernam-decrypt-do").addEventListener("click", () => {
+            const input = processInput(document.getElementById("vernam-decrypt-in").value);
+            const key = processInput(document.getElementById("vernam-decrypt-key").value);
+            document.getElementById("vernam-decrypt-out").innerText = vernamEncrypt(input, key, false);
+        });
+        
+
+
+    </script>
+
+    </body>
+</html>
