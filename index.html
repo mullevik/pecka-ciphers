@@ -96,7 +96,7 @@
                 }
 
                 const openTextIndex = CHAR_TO_INDEX_MAP[char];
-                const keyIndex = CHAR_TO_INDEX_MAP[key[mod(keyPosition, key.length)]];
+                const keyIndex = CHAR_TO_INDEX_MAP[key[mod(currentKeyPosition, key.length)]];
 
                 const resultingIndex = encrypt ? openTextIndex + keyIndex : openTextIndex - keyIndex;
                 return INDEX_TO_CHAR_MAP[mod(resultingIndex, ALPHABET.length)];
